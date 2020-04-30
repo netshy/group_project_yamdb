@@ -1,22 +1,29 @@
+import uuid
+
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-import uuid
-from .serializers import UserEmailSerializer, ConfirmationCodeSerializer, UserSerializer, UserInfoSerializer
-from .models import User
+from rest_framework import status, viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status, viewsets
-from rest_framework_simplejwt.tokens import AccessToken
-from .permissions import AdminPermission
+from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.tokens import AccessToken
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import User, Categories
+from .permissions import AdminPermission, CategoriesPermission
+from .serializers import (
+    UserEmailSerializer,
+    ConfirmationCodeSerializer,
+    UserSerializer,
+    UserInfoSerializer,
+    CategoriesSerializer,
+)
 
 
 @api_view(['POST'])
 @authentication_classes([])
 def send_confirmation_code(request):
-    print(permission_classes)
     username = request.data.get('username')
     serializer = UserEmailSerializer(data=request.data)
     email = request.data.get('email')
@@ -52,7 +59,7 @@ def get_user_token(request):
             token = AccessToken.for_user(user)
 
             return Response({f'token: {token}'}, status=status.HTTP_200_OK)
-        return Response({'confirmation_code' : 'Неверный код подтверждения'},
+        return Response({'confirmation_code': 'Неверный код подтверждения'},
                         status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -62,6 +69,23 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     serializer_class = UserSerializer
     permission_classes = [AdminPermission]
+
+
+class CategoriesViewSet(viewsets.ModelViewSet):
+    queryset = Categories.objects.all()
+    lookup_field = 'slug'
+    serializer_class = CategoriesSerializer
+    permission_classes = [CategoriesPermission]
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class UserInfoViewSet(viewsets.ModelViewSet):
@@ -75,8 +99,7 @@ class UserInfoViewSet(viewsets.ModelViewSet):
 class UserInfo(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
-        print('REQ DATA', request.user)
+    def get(self, request):
         queryset = User.objects.get(username=request.user.username)
         serializer = UserInfoSerializer(queryset)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -44,6 +44,7 @@ class Test02CategoryAPI:
         assert response.status_code == 200, \
             'Проверьте, что при GET запросе `/api/v1/categories/` возвращает статус 200'
         data = response.json()
+        print(data)
         assert 'count' in data, \
             'Проверьте, что при GET запросе `/api/v1/categories/` возвращаете данные с пагинацией. ' \
             'Не найден параметр `count`'
@@ -123,4 +124,3 @@ class Test02CategoryAPI:
         user, moderator = create_users_api(user_client)
         self.check_permissions(user, 'обычного пользователя', categories)
         self.check_permissions(moderator, 'модератора', categories)
-

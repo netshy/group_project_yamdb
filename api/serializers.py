@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import User, Categories
 
 
 class UserEmailSerializer(serializers.Serializer):
@@ -18,9 +18,16 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
 
 
+class CategoriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categories
+        fields = ('name', 'slug',)
+
+
 class UserInfoSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
+
     class Meta:
         model = User
         fields = '__all__'

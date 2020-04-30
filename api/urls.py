@@ -2,11 +2,11 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 
-from .views import send_confirmation_code, get_user_token, UserViewSet, UserInfo, UserInfoViewSet
+from .views import send_confirmation_code, get_user_token, UserViewSet, UserInfo, CategoriesViewSet
 
 v1_router = DefaultRouter()
-#v1_router.register('users/me', UserInfoViewSet, basename='user info')
 v1_router.register('users', UserViewSet)
+v1_router.register('categories', CategoriesViewSet)
 
 
 
