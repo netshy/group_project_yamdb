@@ -3,13 +3,12 @@ import uuid
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets, filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import User, Categories
 from .permissions import AdminPermission, CategoriesPermission
 from .serializers import (
@@ -24,16 +23,13 @@ from .serializers import (
 @api_view(['POST'])
 @authentication_classes([])
 def send_confirmation_code(request):
-    username = request.data.get('username')
     serializer = UserEmailSerializer(data=request.data)
-    email = request.data.get('email')
     if serializer.is_valid():
-        if username is not None:
-            user = User.objects.filter(username=username) | User.objects.filter(email=email)
-            if not user == 0:
-                User.objects.create_user(username=username, email=email)
-            else:
-                return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
+        email = serializer.data['email']
+        user_is_exist = User.objects.filter(email=email).exists()
+        if not user_is_exist:
+            # username same as email
+            User.objects.create_user(username=email, email=email)
         confirmation_code = uuid.uuid3(uuid.NAMESPACE_DNS, email)
 
         send_mail(
@@ -52,12 +48,13 @@ def send_confirmation_code(request):
 def get_user_token(request):
     serializer = ConfirmationCodeSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.data.get('email')
-        confirmation_code = serializer.data.get('confirmation_code')
+        email = serializer.data['email']
+        confirmation_code = serializer.data['confirmation_code']
         user = get_object_or_404(User, email=email)
-        if str(uuid.uuid3(uuid.NAMESPACE_DNS, email)) == confirmation_code:
+        # generate code to check with confirmation code
+        code = str(uuid.uuid3(uuid.NAMESPACE_DNS, email))
+        if code == confirmation_code:
             token = AccessToken.for_user(user)
-
             return Response({f'token: {token}'}, status=status.HTTP_200_OK)
         return Response({'confirmation_code': 'Неверный код подтверждения'},
                         status=status.HTTP_400_BAD_REQUEST)
