@@ -123,4 +123,3 @@ class Test02CategoryAPI:
         user, moderator = create_users_api(user_client)
         self.check_permissions(user, 'обычного пользователя', categories)
         self.check_permissions(moderator, 'модератора', categories)
-
