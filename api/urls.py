@@ -9,12 +9,12 @@ v1_router.register('users', UserViewSet)
 v1_router.register('categories', CategoriesViewSet)
 
 
-
 urlpatterns = [
         path('v1/auth/email/',  send_confirmation_code),
         path('v1/auth/token/', get_user_token),
         path('v1/users/me/', UserInfo.as_view())
     ]
+
 urlpatterns += [
     path('v1/', include(v1_router.urls)),
 ]

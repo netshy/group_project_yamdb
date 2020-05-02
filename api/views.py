@@ -77,20 +77,11 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
-
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-class UserInfoViewSet(viewsets.ModelViewSet):
-    serializer_class = UserInfoSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return User.objects.filter(username=self.request.user.username)
 
 
 class UserInfo(APIView):

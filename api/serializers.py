@@ -30,4 +30,4 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
