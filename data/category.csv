@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 id,name,slug
+=======
+id,title,slug
+>>>>>>> a3ace77570ad33da9ac6fcfde508ecde6709b00b
 1,Фильм,movie
 2,Книга,book
 3,Музыка,music
