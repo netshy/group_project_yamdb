@@ -8,7 +8,7 @@ class AdminPermission(permissions.BasePermission):
             return bool(request.user.is_staff or request.user.role == 'admin')
 
 
-class CategoriesPermission(permissions.BasePermission):
+class UserPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:

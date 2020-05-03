@@ -9,14 +9,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .models import User, Categories
-from .permissions import AdminPermission, CategoriesPermission
+from .models import User, Categories, Genres
+from .permissions import AdminPermission, UserPermission
 from .serializers import (
     UserEmailSerializer,
     ConfirmationCodeSerializer,
     UserSerializer,
     UserInfoSerializer,
     CategoriesSerializer,
+    GenresSerializer,
 )
 
 
@@ -68,11 +69,27 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [AdminPermission]
 
 
+class GenresViewSet(viewsets.ModelViewSet):
+    queryset = Genres.objects.all()
+    lookup_field = 'slug'
+    serializer_class = GenresSerializer
+    permission_classes = [UserPermission]
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
     lookup_field = 'slug'
     serializer_class = CategoriesSerializer
-    permission_classes = [CategoriesPermission]
+    permission_classes = [UserPermission]
 
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
