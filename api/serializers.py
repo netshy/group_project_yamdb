@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User, Categories
+from .models import User, Categories, Review, Comments
 
 
 class UserEmailSerializer(serializers.Serializer):
@@ -31,3 +31,14 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
+
+
+class ReviewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'text', 'author', 'score', 'pub_date']
+
+
+class CommentsSerializer(serializers.ModelSerializer):
+    model = Comments
+    fields = ['id', 'text', 'author', 'pub_date']
