@@ -15,9 +15,9 @@ class User(AbstractUser):
     bio = models.TextField(max_length=200, blank=True)
 
 
-class Category(models.Model):
+class Categories(models.Model):
     name = models.CharField(max_length=20)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True, default=uuid.uuid1)
 
     def __str__(self):
         return self.name
@@ -33,13 +33,13 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField(max_length=50)
-    year = models.DateField("Год выпуска")
-    description = models.TextField()
+    year = models.PositiveIntegerField("Год выпуска")
+    description = models.TextField(max_length=200)
     genre = models.ForeignKey(
-        Genre, on_delete=models.SET_NULL, related_name="genre_titles", null=True
+        Genre, on_delete=models.SET_NULL, related_name="genre_titles", null=True, blank=True
     )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, related_name="category_titles", null=True
+        Categories, on_delete=models.SET_NULL, related_name="category_titles", null=True, blank=True
     )
 
     def __str__(self):

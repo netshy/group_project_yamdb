@@ -4,20 +4,21 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .models import User, Categories
-from .permissions import AdminPermission, CategoriesPermission
+from .models import User, Categories, Genre, Title
+from .permissions import AdminPermission, CategoriesPermission, GenrePermission, TitlePermission
 from .serializers import (
     UserEmailSerializer,
     ConfirmationCodeSerializer,
     UserSerializer,
     UserInfoSerializer,
     CategoriesSerializer,
-)
+    GenreSerializer, TitleSerializer)
 
 
 @api_view(['POST'])
@@ -73,12 +74,44 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     serializer_class = CategoriesSerializer
     permission_classes = [CategoriesPermission]
+    pagination_class = PageNumberPagination
 
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    lookup_field = 'slug'
+    serializer_class = GenreSerializer
+    permission_classes = [GenrePermission]
+    pagination_class = PageNumberPagination
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    lookup_field = 'name'
+    serializer_class = TitleSerializer
+    permission_classes = [TitlePermission]
+    pagination_class = PageNumberPagination
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'year' 'genre.slug', 'category.slug']
 
     def update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
