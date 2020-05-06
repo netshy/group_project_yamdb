@@ -5,13 +5,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import User, Categories, Review, Comments, Genre, Title
-from .permissions import AdminPermission, CategoriesPermission
+from .permissions import AdminPermission, CategoriesPermission, TitlePermission, GenrePermission
 from .serializers import (
     UserEmailSerializer,
     ConfirmationCodeSerializer,
@@ -92,7 +92,6 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
-    lookup_field = 'slug'
     serializer_class = GenreSerializer
     permission_classes = [GenrePermission]
     pagination_class = PageNumberPagination
@@ -146,3 +145,19 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.all()
     serializer_class = CommentsSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class ReviewDetailViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewsSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return title.title_review.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)

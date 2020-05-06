@@ -1,7 +1,7 @@
 import uuid
 
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
@@ -33,7 +33,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField(max_length=50)
-    year = models.PositiveIntegerField("Год выпуска")
+    year = models.IntegerField("Год выпуска")
     description = models.TextField(max_length=200)
     genre = models.ForeignKey(
         Genre, on_delete=models.SET_NULL, related_name="genre_titles", null=True, blank=True
@@ -47,26 +47,15 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_review")
     text = models.TextField()
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="author_review"
-    )
-    pub_date = models.DateTimeField("Дата добавления", auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
+    score = models.IntegerField()
+    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="title_review")
 
 
 class Comments(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comment")
-    text = models.CharField(max_length=500)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_comments")
+    text = models.TextField()
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
-
-
-# Максим, надо сослаться на модель, чтобы при удалении произведения, удалялся отзыв
-class Review(models.Model):
-    author = models. ForeignKey(User, on_delete=models.CASCADE, related_name="review")
-    text = models.CharField(max_length=2000)
-    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
-    score = models.PositiveIntegerField()
-    comment = models.ForeignKey(Comments, on_delete=models.CASCADE, related_name='comment_obj')
-
-
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="review_comments")

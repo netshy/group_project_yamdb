@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User, Categories, Genre, Title, Comments
+from .models import User, Categories, Genre, Title, Comments, Review
 
 
 class UserEmailSerializer(serializers.Serializer):
@@ -58,11 +58,31 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+
+    def validate_score(self, value):
+        if 0 < value <= 10:
+            return value
+        raise serializers.ValidationError('Оценка должна быть от 1 до 10.')
+
+    def validate(self, data):
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = self.context['request'].user
+        is_review_exist = Review.objects.filter(title=title_id, author=user).exists()
+        if is_review_exist:
+            raise serializers.ValidationError('Вы уже оставили отзыв.')
+        return data
+
     class Meta:
         model = Review
-        fields = ['id', 'text', 'author', 'score', 'pub_date']
+        fields = ['id', 'pub_date', 'author', 'text', 'score']
+        #  read_only_fields = ['id', 'pub_date', 'author']
 
 
 class CommentsSerializer(serializers.ModelSerializer):
-    model = Comments
-    fields = ['id', 'text', 'author', 'pub_date']
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        model = Comments
+        fields = ['id', 'text', 'author', 'pub_date']
+        #  read_only_fields = ['id', 'pub_date', 'author']
