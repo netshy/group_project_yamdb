@@ -10,15 +10,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .models import User, Categories, Genre, Title
-from .permissions import AdminPermission, CategoriesPermission, GenrePermission, TitlePermission
+from .models import User, Categories, Review, Comments, Genre, Title
+from .permissions import AdminPermission, CategoriesPermission
 from .serializers import (
     UserEmailSerializer,
     ConfirmationCodeSerializer,
     UserSerializer,
     UserInfoSerializer,
     CategoriesSerializer,
-    GenreSerializer, TitleSerializer)
+    ReviewsSerializer,
+    CommentsSerializer,
+    GenreSerializer,
+    TitleSerializer
+)
 
 
 @api_view(['POST'])
@@ -132,3 +136,13 @@ class UserInfo(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReviewsViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewsSerializer
+
+
+class CommentsViewSet(viewsets.ModelViewSet):
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
