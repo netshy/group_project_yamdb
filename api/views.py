@@ -2,6 +2,7 @@ import uuid
 
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,15 +10,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .models import User, Categories, Genres
-from .permissions import AdminPermission, UserPermission
+from .custom_filter import ModelFilter
+from .models import User, Categories, Genres, Title
+from .permissions import AdminPermission, GeneralPermission
 from .serializers import (
     UserEmailSerializer,
     ConfirmationCodeSerializer,
     UserSerializer,
     UserInfoSerializer,
     CategoriesSerializer,
-    GenresSerializer,
+    GenresSerializer, TitleGeneralSerializer, TitleSlugSerializer,
 )
 
 
@@ -73,7 +75,7 @@ class GenresViewSet(viewsets.ModelViewSet):
     queryset = Genres.objects.all()
     lookup_field = 'slug'
     serializer_class = GenresSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [GeneralPermission]
 
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
@@ -89,7 +91,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
     lookup_field = 'slug'
     serializer_class = CategoriesSerializer
-    permission_classes = [UserPermission]
+    permission_classes = [GeneralPermission]
 
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
@@ -99,6 +101,25 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filter_class = ModelFilter
+    permission_classes = [GeneralPermission]
+
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TitleGeneralSerializer
+        if self.action == 'create':
+            return TitleSlugSerializer
+        if self.action == 'partial_update':
+            return TitleSlugSerializer
+        return TitleGeneralSerializer
+
+
 
 
 class UserInfo(APIView):

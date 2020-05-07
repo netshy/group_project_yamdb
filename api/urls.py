@@ -8,13 +8,15 @@ from .views import (
     UserViewSet,
     UserInfo,
     CategoriesViewSet,
-    GenresViewSet,
+    GenresViewSet, TitleViewSet,
 )
 
 v1_router = DefaultRouter()
 v1_router.register('users', UserViewSet)
 v1_router.register('categories', CategoriesViewSet)
+v1_router.register('titles', TitleViewSet, basename='titles')
 v1_router.register('genres', GenresViewSet)
+
 
 
 urlpatterns = [

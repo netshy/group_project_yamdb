@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from datetime import timedelta
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -76,7 +78,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
-
+#SIMPLE_JWT = {
+ #   'ACCESS_TOKEN_LIFETIME': timedelta(weeks=52),
+#}
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
