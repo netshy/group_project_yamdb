@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
@@ -21,7 +21,7 @@ class Categories(models.Model):
         return self.slug
 
 
-class Genre(models.Model):
+class Genres(models.Model):
     name = models.CharField(max_length=10)
     slug = models.SlugField(unique=True)
 
@@ -29,11 +29,11 @@ class Genre(models.Model):
         return self.slug
 
 
-class Title(models.Model):
+class Titles(models.Model):
     name = models.TextField(max_length=50)
     year = models.IntegerField("Год выпуска")
-    description = models.TextField(max_length=200)
-    genre = models.ManyToManyField(Genre)
+    description = models.TextField(max_length=200, null=True, blank=True)
+    genre = models.ManyToManyField(Genres)
     category = models.ForeignKey(
         Categories, on_delete=models.SET_NULL, related_name="category_titles", null=True, blank=True
     )
@@ -42,11 +42,23 @@ class Title(models.Model):
         return self.name
 
 
-class Review(models.Model):
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+class Reviews(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_review")
     text = models.TextField()
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="author_review"
-    )
-    pub_date = models.DateTimeField("Дата добавления", auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
+    score = models.IntegerField()
+    title = models.ForeignKey(Titles, on_delete=models.CASCADE, related_name="title_review")
+    rating = models.PositiveSmallIntegerField(blank=True, null=True)
 
+    def __str__(self):
+        return self.text
+
+
+class Comments(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_comments")
+    text = models.TextField()
+    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
+    review = models.ForeignKey(Reviews, on_delete=models.CASCADE, related_name="review_comments")
+
+    def __str__(self):
+        return self.text
