@@ -1,6 +1,7 @@
+from django.db.models import Avg
 from rest_framework import serializers
 
-from .models import User, Categories, Genre, Title, Comments, Review
+from .models import User, Categories, Genres, Titles, Comments, Reviews
 
 
 class UserEmailSerializer(serializers.Serializer):
@@ -26,26 +27,32 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genre
+        model = Genres
         fields = ('name', 'slug',)
 
 
 class TitleSlugSerializer(serializers.ModelSerializer):
-    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
+    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genres.objects.all())
     category = serializers.SlugRelatedField(slug_field='slug', queryset=Categories.objects.all())
 
     class Meta:
-        model = Title
+        model = Titles
         fields = '__all__'
 
 
 class TitleGeneralSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategoriesSerializer()
+    rating = serializers.SerializerMethodField(method_name='get_rating')
 
     class Meta:
-        model = Title
+        model = Titles
         fields = '__all__'
+
+    def get_rating(self, obj):
+        result = obj.title_review.aggregate(Avg('score'))
+        avg_rating = result.get('score__avg')
+        return avg_rating
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
@@ -68,15 +75,16 @@ class ReviewsSerializer(serializers.ModelSerializer):
     def validate(self, data):
         title_id = self.context['view'].kwargs.get('title_id')
         user = self.context['request'].user
-        is_review_exist = Review.objects.filter(title=title_id, author=user).exists()
+        if self.context['request'].method == 'PATCH':
+            return data
+        is_review_exist = Reviews.objects.filter(title=title_id, author=user).exists()
         if is_review_exist:
             raise serializers.ValidationError('Вы уже оставили отзыв.')
         return data
 
     class Meta:
-        model = Review
+        model = Reviews
         fields = ['id', 'pub_date', 'author', 'text', 'score']
-        #  read_only_fields = ['id', 'pub_date', 'author']
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -85,4 +93,4 @@ class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = ['id', 'text', 'author', 'pub_date']
-        #  read_only_fields = ['id', 'pub_date', 'author']
+        read_only_fields = ['id', 'pub_date', 'author']

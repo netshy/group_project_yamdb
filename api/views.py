@@ -5,29 +5,25 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view, authentication_classes
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .filters import ModelFilter
-from .models import User, Categories, Genre, Title, Review, Comments
-from .permissions import AdminPermission, GeneralPermission
+from .models import User, Categories, Genres, Titles, Reviews
+from .permissions import AdminPermission, GeneralPermission, ReviewOwnerPermission
 from .serializers import (
     UserEmailSerializer,
     ConfirmationCodeSerializer,
     UserSerializer,
     UserInfoSerializer,
     CategoriesSerializer,
-    GenreSerializer,
     TitleGeneralSerializer,
-    TitleSerializer,
     TitleSlugSerializer,
     ReviewsSerializer,
     CommentsSerializer,
-    GenreSerializer,
-    TitleSerializer
+    GenreSerializer
 )
 
 
@@ -80,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSet(viewsets.ModelViewSet):
-    queryset = Genre.objects.all()
+    queryset = Genres.objects.all()
     lookup_field = 'slug'
     serializer_class = GenreSerializer
     permission_classes = [GeneralPermission]
@@ -112,17 +108,13 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Titles.objects.all()
     filter_backends = [DjangoFilterBackend]
     filter_class = ModelFilter
     permission_classes = [GeneralPermission]
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return TitleGeneralSerializer
-        if self.action == 'create':
-            return TitleSlugSerializer
-        if self.action == 'partial_update':
+        if self.action == 'create' or self.action == 'partial_update':
             return TitleSlugSerializer
         return TitleGeneralSerializer
 
@@ -144,27 +136,27 @@ class UserInfo(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ReviewsViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
-    serializer_class = ReviewsSerializer
-
-
-class CommentsViewSet(viewsets.ModelViewSet):
-    queryset = Comments.objects.all()
+class ReviewCommentDetailViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, ReviewOwnerPermission]
+
+    def get_queryset(self):
+        comment = get_object_or_404(Reviews, pk=self.kwargs.get('review_id'))
+        return comment.review_comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        review = get_object_or_404(Reviews, pk=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)
 
 
 class ReviewDetailViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewsSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, ReviewOwnerPermission]
 
     def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
         return title.title_review.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
