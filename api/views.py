@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .filters import ModelFilter
-from .models import User, Categories, Genres, Title, Review, Comment
+from .models import User, Categories, Genres, Title, Review
 from .permissions import AdminPermission, GeneralPermission, ReviewOwnerPermission
 from .serializers import (
     UserEmailSerializer,
