@@ -16,7 +16,7 @@ class ConfirmationCodeSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
+        fields = ('username', 'role', 'email', 'first_name', 'last_name', 'bio')
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -61,7 +61,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
+        fields = ('username', 'role', 'email', 'first_name', 'last_name', 'bio')
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
@@ -84,7 +84,8 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'pub_date', 'author', 'text', 'score']
+        fields = ('id', 'pub_date', 'author', 'text', 'score')
+        read_only_fields = ['id', 'pub_date', 'author']
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -92,5 +93,5 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'author', 'pub_date']
+        fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ['id', 'pub_date', 'author']
