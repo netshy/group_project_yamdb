@@ -1,7 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
 
-from .models import User, Categories, Genres, Titles, Comments, Reviews
+from .models import User, Categories, Genres, Title, Comment, Review
 
 
 class UserEmailSerializer(serializers.Serializer):
@@ -36,7 +36,7 @@ class TitleSlugSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field='slug', queryset=Categories.objects.all())
 
     class Meta:
-        model = Titles
+        model = Title
         fields = '__all__'
 
 
@@ -46,7 +46,7 @@ class TitleGeneralSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField(method_name='get_rating')
 
     class Meta:
-        model = Titles
+        model = Title
         fields = '__all__'
 
     def get_rating(self, obj):
@@ -66,24 +66,20 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 class ReviewsSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(slug_field='username', read_only=True)
-
-    def validate_score(self, value):
-        if 0 < value <= 10:
-            return value
-        raise serializers.ValidationError('Оценка должна быть от 1 до 10.')
+    score = serializers.IntegerField(min_value=1, max_value=10)
 
     def validate(self, data):
         title_id = self.context['view'].kwargs.get('title_id')
         user = self.context['request'].user
         if self.context['request'].method == 'PATCH':
             return data
-        is_review_exist = Reviews.objects.filter(title=title_id, author=user).exists()
-        if is_review_exist:
+        is_review_exists = Review.objects.filter(title=title_id, author=user).exists()
+        if is_review_exists:
             raise serializers.ValidationError('Вы уже оставили отзыв.')
         return data
 
     class Meta:
-        model = Reviews
+        model = Review
         fields = ['id', 'pub_date', 'author', 'text', 'score']
 
 
@@ -91,6 +87,6 @@ class CommentsSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
-        model = Comments
+        model = Comment
         fields = ['id', 'text', 'author', 'pub_date']
         read_only_fields = ['id', 'pub_date', 'author']

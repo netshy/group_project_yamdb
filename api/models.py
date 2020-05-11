@@ -29,7 +29,7 @@ class Genres(models.Model):
         return self.slug
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.TextField(max_length=50)
     year = models.IntegerField("Год выпуска")
     description = models.TextField(max_length=200, null=True, blank=True)
@@ -42,23 +42,23 @@ class Titles(models.Model):
         return self.name
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_review")
     text = models.TextField()
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     score = models.IntegerField()
-    title = models.ForeignKey(Titles, on_delete=models.CASCADE, related_name="title_review")
+    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="title_review")
     rating = models.PositiveSmallIntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.text
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_comments")
     text = models.TextField()
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
-    review = models.ForeignKey(Reviews, on_delete=models.CASCADE, related_name="review_comments")
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="review_comments")
 
     def __str__(self):
         return self.text

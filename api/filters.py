@@ -1,6 +1,6 @@
 import django_filters
 
-from api.models import Titles, Genres, Categories
+from api.models import Title, Genres, Categories
 
 
 class ModelFilter(django_filters.FilterSet):
@@ -15,5 +15,5 @@ class ModelFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ('genre', 'category', 'year', 'name')
