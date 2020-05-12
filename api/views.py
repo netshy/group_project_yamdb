@@ -1,6 +1,7 @@
 import uuid
 
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
@@ -66,7 +67,6 @@ def get_user_token(request):
     return Response({f'token: {token}'}, status=status.HTTP_200_OK)
 
 
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     lookup_field = 'username'
@@ -81,7 +81,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = [GeneralPermission]
 
     filter_backends = [filters.SearchFilter]
-    search_fields = ['name']
+    search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -97,7 +97,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     permission_classes = [GeneralPermission]
 
     filter_backends = [filters.SearchFilter]
-    search_fields = ['name']
+    search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -107,7 +107,6 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
     filter_backends = [DjangoFilterBackend]
     filter_class = ModelFilter
     permission_classes = [GeneralPermission]
@@ -116,6 +115,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'partial_update'):
             return TitleSlugSerializer
         return TitleGeneralSerializer
+
+    def get_queryset(self):
+        return Title.objects.all().annotate(rating=Avg('title_review__score'))
 
 
 class UserInfo(APIView):
@@ -135,19 +137,6 @@ class UserInfo(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ReviewCommentDetailViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentsSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, ReviewOwnerPermission]
-
-    def get_queryset(self):
-        comment = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        return comment.review_comments.all()
-
-    def perform_create(self, serializer):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        serializer.save(author=self.request.user, review=review)
-
-
 class ReviewDetailViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, ReviewOwnerPermission]
@@ -159,3 +148,16 @@ class ReviewDetailViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
+
+
+class ReviewCommentDetailViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentsSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, ReviewOwnerPermission]
+
+    def get_queryset(self):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'), title=self.kwargs.get('title_id'))
+        return review.review_comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'), title=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, review=review)
