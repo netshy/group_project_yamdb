@@ -1,6 +1,5 @@
 from rest_framework import serializers
-
-from .models import User, Categories, Genres, Title, Comment, Review
+from .models import User, Category, Genre, Title, Comment, Review
 
 
 class UserEmailSerializer(serializers.Serializer):
@@ -15,24 +14,24 @@ class ConfirmationCodeSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
+        fields = ('username', 'role', 'email', 'first_name', 'last_name', 'bio')
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Categories
+        model = Category
         fields = ('name', 'slug',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genres
+        model = Genre
         fields = ('name', 'slug',)
 
 
 class TitleSlugSerializer(serializers.ModelSerializer):
-    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genres.objects.all())
-    category = serializers.SlugRelatedField(slug_field='slug', queryset=Categories.objects.all())
+    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
+    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
 
     class Meta:
         model = Title
@@ -55,7 +54,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'role', 'email', 'first_name', 'last_name', 'bio']
+        fields = ('username', 'role', 'email', 'first_name', 'last_name', 'bio')
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
@@ -74,7 +73,8 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'pub_date', 'author', 'text', 'score']
+        fields = ('id', 'pub_date', 'author', 'text', 'score')
+        read_only_fields = ('id', 'pub_date', 'author')
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -82,5 +82,5 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'author', 'pub_date']
-        read_only_fields = ['id', 'pub_date', 'author']
+        fields = ('id', 'text', 'author', 'pub_date')
+        read_only_fields = ('id', 'pub_date', 'author')
