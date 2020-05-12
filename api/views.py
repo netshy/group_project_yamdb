@@ -1,6 +1,7 @@
 import uuid
 
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
@@ -108,7 +109,6 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
     filter_backends = [DjangoFilterBackend]
     filter_class = ModelFilter
     permission_classes = [GeneralPermission]
@@ -117,6 +117,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'create' or self.action == 'partial_update':
             return TitleSlugSerializer
         return TitleGeneralSerializer
+
+    def get_queryset(self):
+        return Title.objects.all().annotate(rating=Avg('title_review__score'))
 
 
 class UserInfo(APIView):
