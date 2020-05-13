@@ -26,9 +26,11 @@ v1_router.register(r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comment
 urlpatterns = [
     path('v1/auth/email/', send_confirmation_code),
     path('v1/auth/token/', get_user_token),
-    path('v1/users/me/', UserInfo.as_view())
+    path('v1/users/me/', UserInfo.as_view()),
+    path('v1/', include(v1_router.urls))
 ]
 
-urlpatterns += [
-    path('v1/', include(v1_router.urls)),
-]
+
+
+
+

@@ -1,16 +1,15 @@
 import django_filters
-
-from api.models import Title, Genres, Categories
+from api.models import Title, Genre, Category
 
 
 class ModelFilter(django_filters.FilterSet):
     genre = django_filters.ModelChoiceFilter(field_name='genre__slug',
                                              to_field_name='slug',
-                                             queryset=Genres.objects.all())
+                                             queryset=Genre.objects.all())
 
     category = django_filters.ModelChoiceFilter(field_name='category__slug',
                                                 to_field_name='slug',
-                                                queryset=Categories.objects.all())
+                                                queryset=Category.objects.all())
 
     name = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
 
