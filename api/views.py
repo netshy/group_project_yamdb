@@ -33,11 +33,13 @@ from .serializers import (
 def send_confirmation_code(request):
     serializer = UserEmailSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+
     email = serializer.data['email']
     user_is_exist = User.objects.filter(email=email).exists()
     if not user_is_exist:
         # username same as email
         User.objects.create_user(username=email, email=email)
+
     confirmation_code = uuid.uuid3(uuid.NAMESPACE_DNS, email)
 
     send_mail(
@@ -47,6 +49,7 @@ def send_confirmation_code(request):
         [email],
         fail_silently=False
     )
+
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -55,15 +58,18 @@ def send_confirmation_code(request):
 def get_user_token(request):
     serializer = ConfirmationCodeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+
     email = serializer.data['email']
     confirmation_code = serializer.data['confirmation_code']
+
     user = get_object_or_404(User, email=email)
     # generate code to check with confirmation code
     code = str(uuid.uuid3(uuid.NAMESPACE_DNS, email))
-    if not code == confirmation_code:
+    if code != confirmation_code:
         return Response({'confirmation_code': 'Неверный код подтверждения'},
                         status=status.HTTP_400_BAD_REQUEST)
     token = AccessToken.for_user(user)
+
     return Response({f'token: {token}'}, status=status.HTTP_200_OK)
 
 
