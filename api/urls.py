@@ -18,9 +18,10 @@ v1_router.register('users', UserViewSet)
 v1_router.register('categories', CategoriesViewSet)
 v1_router.register('genres', GenreViewSet)
 v1_router.register('titles', TitleViewSet, basename='titles')
-v1_router.register(r'titles/(?P<title_id>\d+)/reviews', ReviewDetailViewSet, basename='review')
-v1_router.register(r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments', ReviewCommentDetailViewSet,
-                   basename="reviews_comments")
+v1_router.register(r'titles/(?P<title_id>\d+)/reviews',
+                   ReviewDetailViewSet, basename='review')
+v1_router.register(r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+                   ReviewCommentDetailViewSet, basename="reviews_comments")
 
 urlpatterns = [
     path('v1/auth/email/', send_confirmation_code),
