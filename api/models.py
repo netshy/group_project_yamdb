@@ -36,7 +36,7 @@ class Title(models.Model):
     description = models.TextField(max_length=200, null=True, blank=True)
     genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, related_name="category_titles", null=True, blank=True
+        Category, on_delete=models.SET_NULL, related_name="titles", null=True, blank=True
     )
 
     def __str__(self):
