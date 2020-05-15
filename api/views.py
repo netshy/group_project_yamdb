@@ -123,7 +123,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleGeneralSerializer
 
     def get_queryset(self):
-        return Title.objects.all().annotate(rating=Avg('titles__score'))
+        return Title.objects.all().annotate(rating=Avg('reviews__score'))
 
 
 class UserInfo(APIView):
@@ -149,7 +149,7 @@ class ReviewDetailViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        return title.titles.all()
+        return title.reviews.all()
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -163,7 +163,7 @@ class ReviewCommentDetailViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'),
                                    title=self.kwargs.get('title_id'))
-        return review.reviews.all()
+        return review.comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'),

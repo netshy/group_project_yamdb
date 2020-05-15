@@ -50,7 +50,7 @@ class Review(models.Model):
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     score = models.IntegerField()
     title = models.ForeignKey(Title, on_delete=models.CASCADE,
-                              related_name="titles")
+                              related_name="reviews")
     rating = models.PositiveSmallIntegerField(blank=True, null=True)
 
     def __str__(self):
@@ -59,11 +59,11 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name="commentator")
+                               related_name="comments")
     text = models.TextField()
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     review = models.ForeignKey(Review, on_delete=models.CASCADE,
-                               related_name="reviews")
+                               related_name="comments")
 
     def __str__(self):
         return self.text
